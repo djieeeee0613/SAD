@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>CoverStage — 音樂 Cover 交流平台</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0a0f;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    :root {
+      --rp: #b96bff;
+      --rpk: #ff4d8f;
+      --ro: #ff6b35;
+      --rc: #00e5cc;
+      --rt: #f0eaff;
+      --rm: #8a7fa8;
+      --rcard: #1c1a26;
+      --rborder: rgba(180, 100, 255, 0.18);
+      --racc: linear-gradient(90deg, #b96bff, #ff4d8f);
+      --racc2: linear-gradient(90deg, #ff6b35, #ff4d8f, #b96bff);
+      --rgrad: linear-gradient(135deg, #3a0066 0%, #1a0033 30%, #0a001a 55%, #001a2e 80%, #0a0a0f 100%);
+    }
+
+    #shell {
+      position: fixed;
+      inset: 0;
+      background: var(--rgrad);
+      overflow: hidden;
+    }
+
+    #shell::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -20%;
+      width: 70%;
+      height: 80%;
+      background: radial-gradient(ellipse, rgba(185, 107, 255, 0.08) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    #shell::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      right: -15%;
+      width: 60%;
+      height: 70%;
+      background: radial-gradient(ellipse, rgba(255, 77, 143, 0.07) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--rgrad);
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+      will-change: transform;
+    }
+
+    .page.active {
+      transform: translateX(0);
+      z-index: 2;
+    }
+
+    .page.slide-out {
+      transform: translateX(-28%);
+      z-index: 1;
+    }
+
+    .topbar {
+      background: rgba(10, 8, 20, 0.92);
+      border-bottom: 1px solid var(--rborder);
+      padding: 0 14px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 3;
+    }
+
+    .logo {
+      font-size: 19px;
+      font-weight: 700;
+      background: var(--racc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tbtn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--rm);
+      font-size: 20px;
+      padding: 5px;
+    }
+
+    .tbtn:hover {
+      color: var(--rp);
+    }
+
+    .scrollbody {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 14px 13px 10px;
+    }
+
+    .scrollbody::-webkit-scrollbar {
+      width: 2px;
+    }
+
+    .scrollbody::-webkit-scrollbar-thumb {
+      background: rgba(185, 107, 255, 0.35);
+      border-radius: 2px;
+    }
+
+    .bottomnav {
+      background: rgba(10, 8, 20, 0.95);
+      border-top: 1px solid var(--rborder);
+      display: flex;
+      flex-shrink: 0;
+      z-index: 3;
+    }
+
+    .bnav {
+      flex: 1;
+      padding: 9px 0 7px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--rm);
+      font-size: 10px;
+      font-family: inherit;
+    }
+
+    .bnav i {
+      font-size: 22px;
+    }
+
+    .bnav.on {
+      color: var(--rp);
+    }
+
+    input,
+    textarea {
+      font-family: inherit;
+    }
+
+    .ri {
+      width: 100%;
+      padding: 9px 12px;
+      background: rgba(10, 8, 20, 0.7);
+      border: 1px solid var(--rborder);
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--rt);
+      outline: none;
+    }
+
+    .ri::placeholder {
+      color: var(--rm);
+    }
+
+    .ri:focus {
+      border-color: rgba(185, 107, 255, 0.5);
+    }
+
+    .rta {
+      width: 100%;
+      padding: 9px 12px;
+      background: rgba(10, 8, 20, 0.7);
+      border: 1px solid var(--rborder);
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--rt);
+      outline: none;
+      resize: vertical;
+      min-height: 66px;
+    }
+
+    .rta::placeholder {
+      color: var(--rm);
+    }
+
+    .rbtn {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 9px;
+      background: var(--racc);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: inherit;
+    }
+
+    .rbtn:hover {
+      opacity: 0.88;
+    }
+
+    .card {
+      background: var(--rcard);
+      border: 1px solid var(--rborder);
+      border-radius: 13px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .fl {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lbl {
+      font-size: 11px;
+      color: var(--rm);
+    }
+
+    .msg {
+      font-size: 12px;
+      color: #ff6b8a;
+      text-align: center;
+      min-height: 15px;
+    }
+
+    .atabs {
+      display: flex;
+      border: 1px solid var(--rborder);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    .atab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--rm);
+      font-family: inherit;
+    }
+
+    .atab.on {
+      background: linear-gradient(135deg, rgba(185, 107, 255, 0.25), rgba(255, 77, 143, 0.15));
+      color: var(--rp);
+      font-weight: 500;
+    }
+
+    .chip {
+      padding: 5px 11px;
+      border: 1px solid var(--rborder);
+      border-radius: 18px;
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--rm);
+      background: rgba(10, 8, 20, 0.5);
+    }
+
+    .chip.on {
+      background: rgba(185, 107, 255, 0.18);
+      border-color: rgba(185, 107, 255, 0.5);
+      color: var(--rp);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 3px;
+    }
+
+    .ptog {
+      display: flex;
+      border: 1px solid var(--rborder);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    .pt {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--rm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-family: inherit;
+    }
+
+    .pt.on {
+      background: linear-gradient(135deg, rgba(185, 107, 255, 0.22), rgba(255, 77, 143, 0.1));
+      color: var(--rp);
+    }
+
+    .auth-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .avc {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: rgba(185, 107, 255, 0.12);
+      border: 2px dashed rgba(185, 107, 255, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .avc img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avc i {
+      font-size: 30px;
+      color: var(--rp);
+    }
+
+    .qup {
+      background: linear-gradient(135deg, rgba(185, 107, 255, 0.17), rgba(255, 77, 143, 0.1));
+      border: 1px solid rgba(185, 107, 255, 0.28);
+      border-radius: 13px;
+      padding: 14px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+    }
+
+    .qup:hover {
+      border-color: rgba(185, 107, 255, 0.5);
+    }
+
+    .quico {
+      width: 44px;
+      height: 44px;
+      background: var(--racc);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .quico i {
+      color: #fff;
+      font-size: 21px;
+    }
+
+    .stitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--rt);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stitle i {
+      color: var(--ro);
+    }
+
+    .vgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .vc {
+      background: var(--rcard);
+      border: 1px solid var(--rborder);
+      border-radius: 13px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .vc:hover {
+      border-color: rgba(185, 107, 255, 0.4);
+    }
+
+    .vth {
+      width: 100%;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .vth i.pl {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .dur {
+      position: absolute;
+      bottom: 4px;
+      right: 5px;
+      font-size: 9px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .ibadge {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .vi {
+      padding: 8px;
+    }
+
+    .vi .vt {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--rt);
+      line-height: 1.3;
+    }
+
+    .vi .vs {
+      font-size: 10px;
+      color: var(--rm);
+      margin-top: 2px;
+    }
+
+    .vi .vm {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+
+    .vm span {
+      font-size: 10px;
+      color: var(--rm);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .vm .lk {
+      color: #ff6b8a;
+    }
+
+    .endmsg {
+      text-align: center;
+      color: var(--rm);
+      font-size: 12px;
+      padding: 16px 0 6px;
+      border-top: 1px solid var(--rborder);
+      margin-top: 6px;
+    }
+
+    .uz {
+      border: 1.5px dashed rgba(185, 107, 255, 0.35);
+      border-radius: 13px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      background: rgba(185, 107, 255, 0.04);
+    }
+
+    .uz:hover {
+      border-color: rgba(185, 107, 255, 0.6);
+    }
+
+    .uz i {
+      font-size: 30px;
+      color: var(--rp);
+    }
+
+    .uz p {
+      font-size: 12px;
+      color: var(--rp);
+      font-weight: 500;
+    }
+
+    .uz span {
+      font-size: 11px;
+      color: var(--rm);
+    }
+
+    .uz.done {
+      border-color: rgba(0, 229, 204, 0.4);
+      background: rgba(0, 229, 204, 0.05);
+    }
+
+    .uz.done i,
+    .uz.done p {
+      color: var(--rc);
+    }
+
+    .uprog {
+      height: 3px;
+      background: rgba(185, 107, 255, 0.15);
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .ubar {
+      height: 100%;
+      background: var(--racc);
+      border-radius: 3px;
+      transition: width 0.2s;
+    }
+
+    .phdr {
+      background: rgba(13, 12, 20, 0.85);
+      padding: 18px 14px 14px;
+      border-bottom: 1px solid var(--rborder);
+      flex-shrink: 0;
+    }
+
+    .pav {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(185, 107, 255, 0.3), rgba(255, 77, 143, 0.25));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--rp);
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid rgba(185, 107, 255, 0.35);
+    }
+
+    .pav img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pstats {
+      display: flex;
+    }
+
+    .ps {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+    }
+
+    .ps+.ps {
+      border-left: 1px solid var(--rborder);
+    }
+
+    .psn {
+      font-size: 17px;
+      font-weight: 500;
+      background: var(--racc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .psl {
+      font-size: 10px;
+      color: var(--rm);
+    }
+
+    .myvg {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+
+    .mvt {
+      aspect-ratio: 9/16;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mvt i {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .pvbtn {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--rborder);
+      border-radius: 9px;
+      background: rgba(185, 107, 255, 0.07);
+      font-size: 13px;
+      color: var(--rt);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-family: inherit;
+    }
+
+    .pvbtn:hover {
+      border-color: rgba(185, 107, 255, 0.4);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+    }
+
+    .mbox {
+      background: #1c1a26;
+      border: 1px solid var(--rborder);
+      border-radius: 14px;
+      padding: 20px;
+      width: 88%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .mhdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mhdr p {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--rt);
+    }
+
+    .mhdr button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--rm);
+      font-size: 19px;
+    }
+
+    .player-ov {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .plbox {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .plscr {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a0033, #001a2e);
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--rborder);
+    }
+
+    .plscr i {
+      font-size: 44px;
+      color: var(--rp);
+    }
+
+    .plt {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--rt);
+    }
+
+    .pls {
+      font-size: 11px;
+      color: var(--rm);
+      margin-top: 3px;
+    }
+
+    .placts {
+      display: flex;
+      gap: 7px;
+    }
+
+    .pla {
+      flex: 1;
+      padding: 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(180, 100, 255, 0.22);
+      background: rgba(185, 107, 255, 0.08);
+      color: var(--rt);
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-family: inherit;
+    }
+
+    .pla:hover {
+      border-color: rgba(185, 107, 255, 0.4);
+    }
+
+    .plclose {
+      margin-top: 3px;
+      background: transparent;
+      border: none;
+      color: var(--rm);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      align-self: center;
+      font-family: inherit;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #b96bff, #ff4d8f);
+      color: #fff;
+      padding: 7px 18px;
+      border-radius: 18px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .cap-title {
+      font-size: 19px;
+      font-weight: bold;
+      color: #5a4b41;
+      margin-bottom: 20px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .cap-item {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .cap-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cap-item.sel {
+      border-color: #ff7043;
+      transform: scale(0.95);
+    }
+
+    .cap-item.sel::after {
+      content: '\ea5e';
+      font-family: 'tabler-icons';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #ff7043;
+      color: #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .cap-btns {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .cap-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 24px;
+      border: none;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .cap-btn.cancel {
+      background: #ffeadd;
+      color: #5a4b41;
+    }
+
+    .cap-btn.verify {
+      background: #ff7043;
+      color: #fff;
+    }
+
+    .cap-footer {
+      font-size: 11px;
+      color: #a09a96;
+      text-align: center;
+      margin-top: 24px;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="shell">
+
+    <!-- PAGE: CAPTCHA -->
+    <div class="page active" id="pg-captcha" style="background: #fff; z-index: 5;">
+      <div class="auth-wrap" style="justify-content: center; padding: 40px 20px;">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 360px;">
+          <div class="cap-title">請選取所有包含吉他手的圖片</div>
+          <div class="cap-grid" id="cap-grid">
+            <div class="cap-item" id="cap-0" onclick="togCap(0)"><img src="https://picsum.photos/seed/pby1/200/200">
+            </div>
+            <div class="cap-item" id="cap-1" onclick="togCap(1)"><img src="https://picsum.photos/seed/pby2/200/200">
+            </div>
+            <div class="cap-item" id="cap-2" onclick="togCap(2)"><img src="https://picsum.photos/seed/pby3/200/200">
+            </div>
+            <div class="cap-item" id="cap-3" onclick="togCap(3)"><img src="https://picsum.photos/seed/pby4/200/200">
+            </div>
+            <div class="cap-item" id="cap-4" onclick="togCap(4)"><img src="https://picsum.photos/seed/pby5/200/200">
+            </div>
+            <div class="cap-item" id="cap-5" onclick="togCap(5)"><img src="https://picsum.photos/seed/pby6/200/200">
+            </div>
+            <div class="cap-item" id="cap-6" onclick="togCap(6)"><img src="https://picsum.photos/seed/pby7/200/200">
+            </div>
+            <div class="cap-item" id="cap-7" onclick="togCap(7)"><img src="https://picsum.photos/seed/pby8/200/200">
+            </div>
+            <div class="cap-item" id="cap-8" onclick="togCap(8)"><img src="https://picsum.photos/seed/pby9/200/200">
+            </div>
+          </div>
+          <div class="cap-btns">
+            <button class="cap-btn cancel" onclick="toast('已取消')">取消</button>
+            <button class="cap-btn verify" onclick="verifyCaptcha()">驗證</button>
+          </div>
+          <div class="cap-footer">資料、圖片引用來自網路公開下載，僅作為本課程使用，不為營利用途</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: AUTH -->
+    <div class="page" id="pg-auth">
+      <div class="auth-wrap">
+        <div style="text-align:center;">
+          <div
+            style="font-size:34px;font-weight:700;background:var(--racc2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;">
+            🎸 CoverStage</div>
+          <div style="font-size:12px;color:var(--rm);margin-top:4px;">用音樂連結每一個靈魂</div>
+        </div>
+        <div class="card" style="width:100%;max-width:400px;">
+          <div class="atabs">
+            <button class="atab on" id="atab-l" onclick="switchTab('login')">登入</button>
+            <button class="atab" id="atab-r" onclick="switchTab('register')">注冊</button>
+          </div>
+          <div id="lfields" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="fl">
+              <div class="lbl">帳號 ID</div><input class="ri" id="lid" placeholder="請輸入帳號">
+            </div>
+            <div class="fl">
+              <div class="lbl">密碼</div><input class="ri" type="password" id="lpw" placeholder="請輸入密碼">
+            </div>
+            <div class="msg" id="lmsg"></div>
+            <button class="rbtn" onclick="doLogin()"><i class="ti ti-login"></i> 登入</button>
+            <div style="font-size:11px;color:var(--rm);text-align:center;">示範：帳號 <span
+                style="color:var(--rp)">demo</span> 密碼 <span style="color:var(--rp)">1234</span></div>
+          </div>
+          <div id="rfields" style="display:none;flex-direction:column;gap:12px;">
+            <div class="fl">
+              <div class="lbl">帳號 ID</div><input class="ri" id="rid" placeholder="設定帳號 ID">
+            </div>
+            <div class="fl">
+              <div class="lbl">密碼</div><input class="ri" type="password" id="rpw" placeholder="設定密碼">
+            </div>
+            <div class="fl">
+              <div class="lbl">暱稱</div><input class="ri" id="rname" placeholder="你的名字">
+            </div>
+            <div class="msg" id="rmsg"></div>
+            <button class="rbtn" onclick="doRegister()">下一步：上傳頭像 <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: AVATAR -->
+    <div class="page" id="pg-avatar">
+      <div class="topbar">
+        <div class="logo">🎸 CoverStage</div>
+      </div>
+      <div class="auth-wrap">
+        <div style="text-align:center;">
+          <p style="font-size:17px;font-weight:500;color:var(--rt);">上傳你的頭貼 🎵</p>
+          <p style="font-size:12px;color:var(--rm);margin-top:5px;">讓舞台認識你！</p>
+        </div>
+        <div class="card" style="width:100%;max-width:340px;align-items:center;gap:16px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div class="avc" id="avc" onclick="document.getElementById('av-inp').click()"><i class="ti ti-camera"></i>
+            </div>
+            <span style="font-size:11px;color:var(--rm);">點擊選擇照片</span>
+            <input type="file" id="av-inp" accept="image/*" style="display:none" onchange="handleAvatar(event)">
+          </div>
+          <button class="rbtn" onclick="finishReg()">完成注冊 🎉</button>
+          <button style="background:transparent;border:none;color:var(--rm);font-size:12px;cursor:pointer;"
+            onclick="finishReg()">跳過，稍後再說</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: HOME -->
+    <div class="page" id="pg-home">
+      <div class="topbar">
+        <div class="logo">🎸 CoverStage</div>
+        <div style="display:flex;gap:2px;">
+          <button class="tbtn" onclick="toast('搜尋功能開發中')"><i class="ti ti-search"></i></button>
+          <button class="tbtn" onclick="toast('通知功能開發中')"><i class="ti ti-bell"></i></button>
+        </div>
+      </div>
+      <div class="scrollbody" id="hscroll">
+        <div class="qup" onclick="goPage('upload')">
+          <div class="quico"><i class="ti ti-circle-plus"></i></div>
+          <div style="flex:1;">
+            <p style="font-size:13px;font-weight:500;color:var(--rt);">發佈你的 Cover 作品</p>
+            <span style="font-size:11px;color:var(--rm);">讓全世界聽見你！</span>
+          </div>
+          <i class="ti ti-chevron-right" style="color:var(--rp);font-size:17px;"></i>
+        </div>
+        <div class="stitle"><i class="ti ti-flame"></i> 熱門 Cover</div>
+        <div class="vgrid" id="vgrid"></div>
+        <div class="endmsg" id="endmsg" style="display:none;">🎵 已經到底部了，去發佈你的作品吧！</div>
+      </div>
+      <div class="bottomnav">
+        <button class="bnav on" onclick="goPage('home')"><i class="ti ti-home"></i>首頁</button>
+        <button class="bnav" onclick="goPage('upload')"><i class="ti ti-circle-plus"></i>發佈</button>
+        <button class="bnav" onclick="goPage('profile', true)"><i class="ti ti-user-circle"></i>我的</button>
+      </div>
+    </div>
+
+    <!-- PAGE: UPLOAD -->
+    <div class="page" id="pg-upload">
+      <div class="topbar">
+        <button class="tbtn" onclick="goPage('home')"><i class="ti ti-arrow-left"></i></button>
+        <div style="font-size:14px;font-weight:500;color:var(--rt);">發佈 Cover 作品</div>
+        <div style="width:30px;"></div>
+      </div>
+      <div class="scrollbody">
+        <div style="display:flex;flex-direction:column;gap:13px;">
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-video" style="font-size:11px;"></i> 上傳影片</div>
+            <div class="uz" id="uz" onclick="document.getElementById('vid-inp').click()">
+              <i class="ti ti-cloud-upload" id="uz-i"></i>
+              <p id="uz-t">點擊選擇影片檔案</p>
+              <span id="uz-s">支援 MP4、MOV、AVI，最大 500MB</span>
+              <div class="uprog" id="uprog" style="display:none;">
+                <div class="ubar" id="ubar" style="width:0%"></div>
+              </div>
+            </div>
+            <input type="file" id="vid-inp" accept="video/*" style="display:none" onchange="handleVid(event)">
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-text-caption" style="font-size:11px;"></i> Cover 標題</div><input class="ri"
+              id="utitle" placeholder="例：我的吉他版 Cover">
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-music" style="font-size:11px;"></i> 歌曲名稱</div><input class="ri" id="usong"
+              placeholder="例：珊瑚海">
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-microphone-2" style="font-size:11px;"></i> 原唱歌手 / 樂團</div><input class="ri"
+              id="uartist" placeholder="例：周杰倫">
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-guitar-pick" style="font-size:11px;"></i> 所用樂器（可多選）</div>
+            <div class="chips" id="uchips">
+              <span class="chip" onclick="togChip(this)">🎸 吉他</span>
+              <span class="chip" onclick="togChip(this)">🎹 鋼琴</span>
+              <span class="chip" onclick="togChip(this)">🥁 鼓組</span>
+              <span class="chip" onclick="togChip(this)">🎷 薩克斯風</span>
+              <span class="chip" onclick="togChip(this)">🎻 小提琴</span>
+              <span class="chip" onclick="togChip(this)">🎺 小號</span>
+              <span class="chip" onclick="togChip(this)">🎙 人聲</span>
+              <span class="chip" onclick="togChip(this)">💻 編曲</span>
+            </div>
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-lock" style="font-size:11px;"></i> 公開設定</div>
+            <div class="ptog">
+              <button class="pt on" id="pt-pub" onclick="setPriv('public')"><i class="ti ti-world"
+                  style="font-size:12px;"></i> 公開</button>
+              <button class="pt" id="pt-pri" onclick="setPriv('private')"><i class="ti ti-lock"
+                  style="font-size:12px;"></i> 私人</button>
+            </div>
+          </div>
+          <div class="fl">
+            <div class="lbl"><i class="ti ti-notes" style="font-size:11px;"></i> 備注說明（選填）</div><textarea class="rta"
+              id="udesc" placeholder="分享練習心得..."></textarea>
+          </div>
+          <button class="rbtn" onclick="doUpload()"><i class="ti ti-upload"></i> 發佈作品</button>
+        </div>
+      </div>
+      <div class="bottomnav">
+        <button class="bnav" onclick="goPage('home')"><i class="ti ti-home"></i>首頁</button>
+        <button class="bnav on" onclick="goPage('upload')"><i class="ti ti-circle-plus"></i>發佈</button>
+        <button class="bnav" onclick="goPage('profile', true)"><i class="ti ti-user-circle"></i>我的</button>
+      </div>
+    </div>
+
+    <!-- PAGE: PROFILE -->
+    <div class="page" id="pg-profile">
+      <div class="topbar">
+        <div style="font-size:14px;font-weight:500;color:var(--rt);">我的主頁</div>
+        <button class="tbtn" onclick="toast('設定開發中')"><i class="ti ti-settings"></i></button>
+      </div>
+      <div class="phdr">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div class="pav" id="pav"><span id="pinit">J</span></div>
+          <div>
+            <p style="font-size:16px;font-weight:500;color:var(--rt);" id="pname">Jay</p>
+            <span style="font-size:12px;color:var(--rm);" id="pid">@jaymusic</span>
+            <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;" id="pitags"></div>
+          </div>
+        </div>
+        <div class="pstats">
+          <div class="ps">
+            <div class="psn" id="pvids">0</div>
+            <div class="psl">作品</div>
+          </div>
+          <div class="ps">
+            <div class="psn">128</div>
+            <div class="psl">粉絲</div>
+          </div>
+          <div class="ps">
+            <div class="psn">64</div>
+            <div class="psl">追蹤</div>
+          </div>
+          <div class="ps">
+            <div class="psn">1.2k</div>
+            <div class="psl">獲讚</div>
+          </div>
+        </div>
+      </div>
+      <div class="scrollbody">
+        <div id="pvbtn-wrap"><button class="pvbtn" onclick="openEdit()"><i class="ti ti-edit"
+              style="font-size:15px;"></i> 編輯個人資料</button></div>
+        <div style="margin-top:14px;">
+          <div style="font-size:12px;color:var(--rm);margin-bottom:9px;display:flex;align-items:center;gap:5px;"><i
+              class="ti ti-video" style="font-size:13px;"></i> 我的作品</div>
+          <div class="myvg" id="myvg">
+            <div style="grid-column:1/-1;text-align:center;color:var(--rm);font-size:12px;padding:18px 0;">
+              尚未發佈任何作品<br><span style="font-size:11px;opacity:0.6;">去上傳你的第一個 Cover！</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottomnav">
+        <button class="bnav" onclick="goPage('home')"><i class="ti ti-home"></i>首頁</button>
+        <button class="bnav" onclick="goPage('upload')"><i class="ti ti-circle-plus"></i>發佈</button>
+        <button class="bnav on" onclick="goPage('profile', true)"><i class="ti ti-user-circle"></i>我的</button>
+      </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div class="overlay" id="edit-ov" style="display:none;">
+      <div class="mbox">
+        <div class="mhdr">
+          <p>編輯個人資料</p><button onclick="closeEdit()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="fl">
+          <div class="lbl">暱稱</div><input class="ri" id="ename">
+        </div>
+        <div class="fl">
+          <div class="lbl">個人簡介</div><input class="ri" id="ebio" placeholder="例：音樂愛好者 🎸">
+        </div>
+        <div class="fl">
+          <div class="lbl">常用樂器</div>
+          <div class="chips" id="echips">
+            <span class="chip" onclick="togChip(this)">🎸 吉他</span>
+            <span class="chip" onclick="togChip(this)">🎹 鋼琴</span>
+            <span class="chip" onclick="togChip(this)">🥁 鼓組</span>
+            <span class="chip" onclick="togChip(this)">🎷 薩克斯風</span>
+            <span class="chip" onclick="togChip(this)">🎻 小提琴</span>
+            <span class="chip" onclick="togChip(this)">🎙 人聲</span>
+          </div>
+        </div>
+        <button class="rbtn" onclick="saveEdit()">儲存變更</button>
+      </div>
+    </div>
+
+    <!-- PLAYER MODAL -->
+    <div class="player-ov" id="player-ov" style="display:none;">
+      <div class="plbox">
+        <div class="plscr"><i class="ti ti-player-play"></i></div>
+        <div>
+          <div class="plt" id="pl-title">—</div>
+          <div class="pls" id="pl-sub">—</div>
+        </div>
+        <div class="pl-user" id="pl-user-btn"
+          style="display:flex;align-items:center;gap:10px;margin-top:2px;margin-bottom:4px;cursor:pointer;background:rgba(255,255,255,0.05);padding:8px 12px;border-radius:12px;border:1px solid var(--rborder);">
+          <div class="pl-uav" id="pl-uav"
+            style="width:34px;height:34px;border-radius:50%;background:var(--rm);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:bold;">
+          </div>
+          <div>
+            <div id="pl-uname" style="font-size:13px;font-weight:500;color:var(--rt);"></div>
+            <div id="pl-uid" style="font-size:11px;color:var(--rm);"></div>
+          </div>
+          <i class="ti ti-chevron-right" style="margin-left:auto;color:var(--rm);"></i>
+        </div>
+        <div class="placts">
+          <button class="pla" id="pl-like" onclick="togLike()"><i class="ti ti-heart"></i> <span
+              id="pl-ln">42</span></button>
+          <button class="pla" onclick="toast('已複製連結！')"><i class="ti ti-share"></i> 分享</button>
+          <button class="pla" onclick="toast('已收藏！')"><i class="ti ti-bookmark"></i> 收藏</button>
+        </div>
+        <button class="plclose" onclick="closePlayer()"><i class="ti ti-x"></i> 關閉</button>
+      </div>
+    </div>
+
+    <div class="toast" id="tst"></div>
+  </div>
+
+  <script>
+    var S = { loggedIn: false, user: { id: '', name: '', avatar: null, bio: '', instruments: [] }, myVids: [], priv: 'public', liked: false, accounts: [{ id: 'demo', pw: '1234', name: '示範用戶', avatar: null }] };
+    var curPage = 'captcha';
+    var curProfileId = null;
+    var TG = ['linear-gradient(135deg,#2d0057,#0a001a)', 'linear-gradient(135deg,#001a2e,#0d0020)', 'linear-gradient(135deg,#3a0030,#0a001a)', 'linear-gradient(135deg,#001a1a,#0a0020)', 'linear-gradient(135deg,#1a0030,#001a2e)', 'linear-gradient(135deg,#2a0020,#0a1a00)'];
+    var BS = ['background:rgba(185,107,255,0.3);color:#d4a0ff;', 'background:rgba(255,77,143,0.25);color:#ff9abf;', 'background:rgba(255,107,53,0.25);color:#ffaa80;', 'background:rgba(0,229,204,0.2);color:#00e5cc;'];
+    var feed = [
+      { id: 1, title: '珊瑚海吉他版 Cover', song: '珊瑚海', artist: '周杰倫', instr: '🎸 吉他', user: '@guitarking', likes: 234, views: '1.2k', gi: 0, bi: 0 },
+      { id: 2, title: '夜曲鋼琴演奏', song: '夜曲', artist: '周杰倫', instr: '🎹 鋼琴', user: '@pianomaster', likes: 189, views: '876', gi: 1, bi: 1 },
+      { id: 3, title: '告白氣球爵士版', song: '告白氣球', artist: '周杰倫', instr: '🎷 薩克斯風', user: '@jazzcat', likes: 312, views: '2.1k', gi: 2, bi: 2 },
+      { id: 4, title: '稻香原聲吉他', song: '稻香', artist: '周杰倫', instr: '🎸 吉他', user: '@acoustic99', likes: 97, views: '543', gi: 3, bi: 3 },
+      { id: 5, title: '青花瓷小提琴版', song: '青花瓷', artist: '周杰倫', instr: '🎻 小提琴', user: '@violinrose', likes: 445, views: '3.4k', gi: 0, bi: 3 },
+      { id: 6, title: '七里香人聲清唱', song: '七里香', artist: '周杰倫', instr: '🎙 人聲', user: '@singer01', likes: 201, views: '1.8k', gi: 1, bi: 2 },
+    ];
+    var loaded = 0, bsz = 4, done = false;
+
+    function toast(m) { var t = document.getElementById('tst'); t.textContent = m; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2000); }
+
+    function goPage(p, isNavClick) {
+      if (!S.loggedIn && ['home', 'upload', 'profile'].indexOf(p) >= 0) return;
+      if (p === 'profile' && isNavClick) curProfileId = S.user.id;
+      if (curPage === p) {
+        if (p === 'profile') renderProfile();
+        return;
+      }
+      var fromEl = document.getElementById('pg-' + curPage);
+      var toEl = document.getElementById('pg-' + p);
+      if (!toEl) return;
+      toEl.style.transform = 'translateX(100%)';
+      toEl.classList.add('active');
+      fromEl.classList.add('slide-out');
+      fromEl.classList.remove('active');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          toEl.style.transform = '';
+          setTimeout(function () { fromEl.classList.remove('slide-out'); }, 340);
+        });
+      });
+      curPage = p;
+      if (p === 'profile') renderProfile();
+    }
+
+    function goDirect(p) {
+      document.querySelectorAll('.page').forEach(function (pg) { pg.classList.remove('active', 'slide-out'); pg.style.transform = 'translateX(100%)'; });
+      var el = document.getElementById('pg-' + p);
+      el.style.transform = 'translateX(0)'; el.classList.add('active');
+      curPage = p;
+    }
+
+    function viewProfile(uid) {
+      curProfileId = uid;
+      goPage('profile');
+    }
+
+    function switchTab(t) {
+      document.getElementById('atab-l').classList.toggle('on', t === 'login');
+      document.getElementById('atab-r').classList.toggle('on', t === 'register');
+      document.getElementById('lfields').style.display = t === 'login' ? 'flex' : 'none';
+      document.getElementById('rfields').style.display = t === 'register' ? 'flex' : 'none';
+    }
+
+    function doLogin() {
+      var id = document.getElementById('lid').value.trim(), pw = document.getElementById('lpw').value;
+      var msg = document.getElementById('lmsg');
+      if (!id || !pw) { msg.textContent = '請輸入帳號和密碼'; return; }
+      var f = S.accounts.find(function (a) { return a.id === id && a.pw === pw; });
+      if (!f) { msg.textContent = '帳號或密碼錯誤'; return; }
+      S.loggedIn = true; S.user = { id: f.id, name: f.name, avatar: f.avatar, bio: '', instruments: [] }; msg.textContent = ''; enterApp();
+    }
+
+    function doRegister() {
+      var id = document.getElementById('rid').value.trim(), pw = document.getElementById('rpw').value, name = document.getElementById('rname').value.trim();
+      var msg = document.getElementById('rmsg');
+      if (!id || !pw || !name) { msg.textContent = '請填寫所有欄位'; return; }
+      if (S.accounts.find(function (a) { return a.id === id; })) { msg.textContent = '帳號 ID 已被使用'; return; }
+      S.accounts.push({ id: id, pw: pw, name: name, avatar: null });
+      S.lastRegId = id; msg.textContent = '';
+      goDirect('avatar');
+    }
+
+    function handleAvatar(e) {
+      var f = e.target.files[0]; if (!f) return;
+      var r = new FileReader(); r.onload = function (ev) { document.getElementById('avc').innerHTML = '<img src="' + ev.target.result + '" alt="av">'; var a = S.accounts.find(function (a) { return a.id === S.lastRegId; }); if (a) a.avatar = ev.target.result; }; r.readAsDataURL(f);
+    }
+
+    function finishReg() {
+      goDirect('auth');
+      switchTab('login');
+      document.getElementById('lid').value = S.lastRegId || '';
+      document.getElementById('lpw').value = '';
+      document.getElementById('rid').value = '';
+      document.getElementById('rpw').value = '';
+      document.getElementById('rname').value = '';
+      document.getElementById('avc').innerHTML = '<i class="ti ti-camera"></i>';
+      toast('註冊成功！請登入');
+    }
+
+    function enterApp() {
+      loaded = 0; done = false; document.getElementById('vgrid').innerHTML = ''; document.getElementById('endmsg').style.display = 'none';
+      goDirect('home'); loadMore();
+    }
+
+    function loadMore() {
+      if (done) return;
+      var g = document.getElementById('vgrid');
+      var end = Math.min(loaded + bsz, feed.length);
+      for (var i = loaded; i < end; i++) {
+        var v = feed[i]; var c = document.createElement('div'); c.className = 'vc';
+        var uid = v.user.replace('@', '');
+        var uacc = S.accounts.find(function (a) { return a.id === uid; });
+        var uname = uacc ? uacc.name : uid;
+        var uav = uacc && uacc.avatar ? '<img src="' + uacc.avatar + '" style="width:100%;height:100%;object-fit:cover;">' : uname[0].toUpperCase();
+        c.innerHTML = '<div class="vth" style="background:' + TG[v.gi % 6] + '"><i class="ti ti-player-play pl"></i><div class="dur">3:24</div><div class="ibadge" style="' + BS[v.bi % 4] + '">' + v.instr + '</div></div><div class="vi"><div class="vt">' + v.title + '</div><div class="vs">' + v.song + ' — ' + v.artist + '</div><div class="vm"><span class="lk"><i class="ti ti-heart" style="font-size:9px;"></i>' + v.likes + '</span><span><i class="ti ti-eye" style="font-size:9px;"></i>' + v.views + '</span></div><div style="display:flex;align-items:center;gap:6px;margin-top:7px;" onclick="event.stopPropagation();viewProfile(\'' + uid + '\')"><div style="width:18px;height:18px;border-radius:50%;background:var(--rm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:bold;overflow:hidden;">' + uav + '</div><div style="font-size:10px;color:var(--rt);font-weight:500;">' + uname + '</div></div></div>';
+        c.onclick = (function (vv) { return function () { openPlayer(vv); }; })(v);
+        g.appendChild(c);
+      }
+      loaded = end;
+      if (loaded >= feed.length) { done = true; document.getElementById('endmsg').style.display = 'block'; }
+    }
+
+    document.getElementById('hscroll').addEventListener('scroll', function () { if (this.scrollTop + this.clientHeight >= this.scrollHeight - 40) loadMore(); });
+
+    function openPlayer(v) {
+      document.getElementById('pl-title').textContent = v.title;
+      document.getElementById('pl-sub').textContent = v.song + ' — ' + v.artist + ' | ' + v.instr;
+      document.getElementById('pl-ln').textContent = v.likes;
+      S.liked = false; updLike();
+      var uid = v.user.replace('@', '');
+      var uacc = S.accounts.find(function (a) { return a.id === uid; });
+      var uname = uacc ? uacc.name : uid;
+      var uav = uacc && uacc.avatar ? '<img src="' + uacc.avatar + '" style="width:100%;height:100%;object-fit:cover;">' : uname[0].toUpperCase();
+      document.getElementById('pl-uname').textContent = uname;
+      document.getElementById('pl-uid').textContent = v.user;
+      document.getElementById('pl-uav').innerHTML = uav;
+      document.getElementById('pl-user-btn').onclick = function () { closePlayer(); viewProfile(uid); };
+      document.getElementById('player-ov').style.display = 'flex';
+    }
+    function closePlayer() { document.getElementById('player-ov').style.display = 'none'; }
+    function togLike() { S.liked = !S.liked; var n = parseInt(document.getElementById('pl-ln').textContent); document.getElementById('pl-ln').textContent = S.liked ? n + 1 : n - 1; updLike(); }
+    function updLike() { document.getElementById('pl-like').style.color = S.liked ? '#ff4d8f' : ''; }
+    function togChip(el) { el.classList.toggle('on'); }
+    function setPriv(p) { S.priv = p; document.getElementById('pt-pub').classList.toggle('on', p === 'public'); document.getElementById('pt-pri').classList.toggle('on', p === 'private'); }
+
+    function handleVid(e) {
+      var f = e.target.files[0]; if (!f) return;
+      document.getElementById('uz').classList.add('done'); document.getElementById('uz-i').className = 'ti ti-check'; document.getElementById('uz-t').textContent = f.name; document.getElementById('uz-s').textContent = Math.round(f.size / 1024 / 1024 * 10) / 10 + ' MB';
+      var prog = document.getElementById('uprog'), bar = document.getElementById('ubar'); prog.style.display = 'block'; var pct = 0; var iv = setInterval(function () { pct += 10; bar.style.width = pct + '%'; if (pct >= 100) clearInterval(iv); }, 70);
+    }
+
+    function doUpload() {
+      var title = document.getElementById('utitle').value.trim(), song = document.getElementById('usong').value.trim(), artist = document.getElementById('uartist').value.trim();
+      if (!title || !song || !artist) { toast('請填寫標題、歌曲和歌手名'); return; }
+      var instrs = Array.from(document.querySelectorAll('#uchips .chip.on')).map(function (c) { return c.textContent; });
+      var nv = { id: Date.now(), title: title, song: song, artist: artist, instr: instrs.length ? instrs[0] : '🎵', privacy: S.priv, likes: 0, views: '0', user: '@' + S.user.id, gi: Math.floor(Math.random() * 6), bi: Math.floor(Math.random() * 4) };
+      S.myVids.unshift(nv); feed.unshift(nv);
+      ['utitle', 'usong', 'uartist', 'udesc'].forEach(function (id) { document.getElementById(id).value = ''; });
+      document.querySelectorAll('#uchips .chip').forEach(function (c) { c.classList.remove('on'); });
+      document.getElementById('uz').classList.remove('done'); document.getElementById('uz-i').className = 'ti ti-cloud-upload'; document.getElementById('uz-t').textContent = '點擊選擇影片檔案'; document.getElementById('uz-s').textContent = '支援 MP4、MOV、AVI，最大 500MB'; document.getElementById('uprog').style.display = 'none'; document.getElementById('ubar').style.width = '0%';
+      toast('🎉 作品發佈成功！');
+      setTimeout(function () { loaded = 0; done = false; document.getElementById('vgrid').innerHTML = ''; document.getElementById('endmsg').style.display = 'none'; loadMore(); goPage('home'); }, 1200);
+    }
+
+    function renderProfile() {
+      var targetId = curProfileId || S.user.id;
+      var isMe = (targetId === S.user.id);
+      var u;
+      if (isMe) {
+        u = S.user;
+        document.getElementById('pvbtn-wrap').innerHTML = '<button class="pvbtn" onclick="openEdit()"><i class="ti ti-edit" style="font-size:15px;"></i> 編輯個人資料</button>';
+      } else {
+        var uacc = S.accounts.find(function (a) { return a.id === targetId; });
+        u = { id: targetId, name: uacc ? uacc.name : targetId, avatar: uacc ? uacc.avatar : null, instruments: uacc && uacc.instruments ? uacc.instruments : [], bio: uacc && uacc.bio ? uacc.bio : '' };
+        if (!S.following) S.following = [];
+        var isFollowing = S.following.indexOf(targetId) >= 0;
+        if (isFollowing) {
+          document.getElementById('pvbtn-wrap').innerHTML = '<button class="pvbtn" onclick="togFollow(\'' + targetId + '\')" style="background:rgba(255,255,255,0.1);color:var(--rt);border:1px solid var(--rborder);"><i class="ti ti-user-check" style="font-size:15px;"></i> 已追蹤</button>';
+        } else {
+          document.getElementById('pvbtn-wrap').innerHTML = '<button class="pvbtn" onclick="togFollow(\'' + targetId + '\')" style="background:var(--racc);color:#fff;border:none;"><i class="ti ti-user-plus" style="font-size:15px;"></i> 追蹤 ' + (u.name || targetId) + '</button>';
+        }
+      }
+      document.getElementById('pname').textContent = u.name || '用戶'; document.getElementById('pid').textContent = '@' + u.id; document.getElementById('pinit').textContent = (u.name || 'U')[0].toUpperCase();
+      var pav = document.getElementById('pav'); if (u.avatar) pav.innerHTML = '<img src="' + u.avatar + '" alt="av" style="width:100%;height:100%;object-fit:cover;">'; else pav.innerHTML = '<span id="pinit">' + (u.name || 'U')[0].toUpperCase() + '</span>';
+      document.getElementById('pitags').innerHTML = (u.instruments || []).map(function (i) { return '<span style="font-size:10px;background:rgba(185,107,255,0.18);color:var(--rp);padding:2px 8px;border-radius:18px;border:1px solid rgba(185,107,255,0.3);">' + i + '</span>'; }).join('');
+      var uVids = isMe ? S.myVids : feed.filter(function (v) { return v.user === '@' + u.id; });
+      document.getElementById('pvids').textContent = uVids.length;
+      var g = document.getElementById('myvg');
+      if (!uVids.length) { g.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--rm);font-size:12px;padding:18px 0;">' + (isMe ? '尚未發佈任何作品<br><span style="font-size:11px;opacity:0.6;">去上傳你的第一個 Cover！</span>' : '該用戶尚未發佈任何作品') + '</div>'; return; }
+      g.innerHTML = uVids.map(function (v) { return '<div class="mvt" style="background:' + TG[(v.gi || 0) % 6] + '" onclick="openPlayer(feed.find(function(f){return f.id===' + v.id + ';}))"><i class="ti ti-player-play"></i>' + (v.privacy === 'private' ? '<div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);border-radius:3px;padding:1px 4px;font-size:9px;color:#fff;">🔒</div>' : '') + '</div>'; }).join('');
+    }
+
+    function openEdit() { document.getElementById('ename').value = S.user.name || ''; document.getElementById('ebio').value = S.user.bio || ''; document.getElementById('edit-ov').style.display = 'flex'; }
+    function closeEdit() { document.getElementById('edit-ov').style.display = 'none'; }
+    function saveEdit() {
+      var name = document.getElementById('ename').value.trim(), bio = document.getElementById('ebio').value.trim();
+      var instrs = Array.from(document.querySelectorAll('#echips .chip.on')).map(function (c) { return c.textContent; });
+      if (name) S.user.name = name; S.user.bio = bio; S.user.instruments = instrs;
+      var a = S.accounts.find(function (a) { return a.id === S.user.id; }); if (a && name) a.name = name;
+      closeEdit(); renderProfile(); toast('✅ 個人資料已更新');
+    }
+
+    var selCaps = [];
+    function togCap(idx) {
+      var el = document.getElementById('cap-' + idx);
+      var pos = selCaps.indexOf(idx);
+      if (pos >= 0) { selCaps.splice(pos, 1); el.classList.remove('sel'); }
+      else { selCaps.push(idx); el.classList.add('sel'); }
+    }
+    function verifyCaptcha() {
+      if (selCaps.length === 0) { toast('請至少選取一張圖片'); return; }
+      toast('✅ 驗證成功！');
+      setTimeout(function () {
+        goPage('auth');
+        setTimeout(function () {
+          selCaps = [];
+          document.querySelectorAll('.cap-item').forEach(function (el) { el.classList.remove('sel'); });
+        }, 400);
+      }, 600);
+    }
+
+    function togFollow(uid) {
+      if (!S.following) S.following = [];
+      var idx = S.following.indexOf(uid);
+      if (idx >= 0) {
+        S.following.splice(idx, 1);
+        toast('已取消追蹤');
+      } else {
+        S.following.push(uid);
+        toast('已追蹤！');
+      }
+      renderProfile();
+    }
+
+    document.querySelectorAll('.page:not(.active)').forEach(function (pg) { pg.style.transform = 'translateX(100%)'; });
+  </script>
+</body>
+
+</html>
